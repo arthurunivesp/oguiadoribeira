@@ -1568,21 +1568,88 @@ h1, h2, h3, .logo {
 }
 .guia-acoes a:not(.btn):hover { text-decoration: underline; }
 
+.form-row-modal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-  .nav { gap: 14px; }
-  .nav a { font-size: 0.85rem; }
-  .hero { height: 420px; }
-  .form-row { grid-template-columns: 1fr; }
-  .footer-inner { grid-template-columns: 1fr; }
-  .footer-links { gap: 28px; }
-  .gps-aviso { flex-wrap: wrap; }
+  .container { padding: 0 14px; }
+  .header-inner { height: 54px; }
+  .logo { font-size: 1.05rem; }
+  .nav { gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  .nav a { font-size: 0.78rem; }
+  .nav-admin { font-size: 0.75rem; }
+
+  .hero { height: 380px; min-height: 340px; }
+  .hero h1 { font-size: 1.55rem; line-height: 1.25; }
+  .hero-sub { font-size: 0.9rem; margin-bottom: 18px; }
+  .hero-btns { flex-direction: column; align-items: stretch; gap: 10px; }
+  .hero-btns .btn { width: 100%; }
+
+  .section { padding: 36px 0; }
+  .section-title { font-size: 1.45rem; }
+  .section-sub { font-size: 0.88rem; margin-bottom: 20px; }
+
+  .tabs { max-width: 100%; }
+  .tab { font-size: 0.88rem; padding: 10px 8px; }
+
+  .gps-aviso { flex-direction: column; align-items: flex-start; gap: 10px; }
   .gps-aviso .btn { margin-left: 0; width: 100%; }
-  .notif-card { flex-wrap: wrap; }
-  .notif-card .btn { margin-left: 0; width: 100%; }
-  .admin-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+
+  .local-atual { padding: 14px 16px; }
+  .local-atual strong { font-size: 1.05rem; }
+
+  .filtros { gap: 6px; }
+  .filtro { padding: 7px 12px; font-size: 0.8rem; }
+
   .busca-row { flex-direction: column; }
+  .busca-row select { width: 100%; min-width: 0; }
+
+  .lista-cards {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .card-img { height: 160px; }
+  .card-title { font-size: 1rem; }
+  .card-meta { font-size: 0.8rem; flex-direction: column; gap: 4px; }
+
+  .como-card { padding: 24px 18px; }
+  .como-card h2 { font-size: 1.35rem; }
+
+  .cidade-destaque { height: 200px; }
+  .cidade-destaque-info h3 { font-size: 1.25rem; }
+  .cidades-grid { gap: 8px; }
+  .cidade-chip { padding: 8px 14px; font-size: 0.82rem; }
+
+  .form-row { grid-template-columns: 1fr; }
+  .form-row-modal { grid-template-columns: 1fr; }
+
+  .footer { padding-top: 36px; }
+  .footer-inner { grid-template-columns: 1fr; gap: 28px; }
+  .footer-links { flex-direction: column; gap: 20px; }
+
+  .notif-card { flex-direction: column; align-items: flex-start; }
+  .notif-card .btn { margin-left: 0; width: 100%; }
+  .cm-grid { grid-template-columns: 1fr; }
+
+  .admin-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .admin-tabs { gap: 6px; }
+  .admin-tab { padding: 8px 12px; font-size: 0.8rem; }
+  .admin-toolbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .admin-table { font-size: 0.82rem; }
+  .admin-table th, .admin-table td { padding: 10px 8px; }
+
+  .modal { max-width: 100%; margin: 0; border-radius: 14px 14px 0 0; max-height: 92vh; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal.modal-lg { max-width: 100%; }
+  .modal-detalhe { max-width: 100%; border-radius: 14px 14px 0 0; }
+  .detalhe-capa { height: 200px; }
+
   .anuncio-pacotes { grid-template-columns: 1fr; }
+
   .gps-float {
     bottom: 12px;
     right: 12px;
@@ -1590,4 +1657,19 @@ h1, h2, h3, .logo {
     width: auto;
     max-width: none;
   }
+
+  .cidade-capa, .cidade-capa-placeholder { height: 180px; }
+  .cidade-hero-info h1 { font-size: 1.4rem; }
+  .cidade-links { gap: 8px; }
+  .guias-grid { grid-template-columns: 1fr; }
+  .guia-card { flex-direction: row; }
+
+  .btn { padding: 11px 18px; font-size: 0.9rem; }
+  .admin-login-box { padding: 24px 18px; }
+}
+
+@media (max-width: 400px) {
+  .nav a { font-size: 0.72rem; gap: 8px; }
+  .hero h1 { font-size: 1.35rem; }
+  .badge-cidades { font-size: 0.78rem; }
 }

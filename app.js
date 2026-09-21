@@ -27,13 +27,32 @@ const GUIAS_PADRAO = [
   { id: 3, nome: "Roberto Costa", cidadeId: 3, foto: "", whatsapp: "5513999990003", referencia: "Passeios de barco e trilhas na Ilha do Cardoso.", especialidades: "Passeios de barco, Ilha do Cardoso, pesca", instagram: "", facebook: "" }
 ];
 
-const EVENTOS_PADRAO = [
-  { id: 1, titulo: "Festival de Inverno de Registro", cidadeId: 14, categoria: "cultura", data: "2026-07-15", descricao: "Shows, feira de artesanato e gastronomia típica da região.", endereco: "Praça da Matriz" },
-  { id: 2, titulo: "Feira Gastronômica de Iguape", cidadeId: 5, categoria: "gastronomia", data: "2026-09-20", descricao: "Sabores do Vale do Ribeira com pratos à base de peixe e mandioca.", endereco: "Centro Histórico" },
-  { id: 3, titulo: "Trilha Ecológica - Parque Estadual", cidadeId: 11, categoria: "cultura", data: "2026-09-21", descricao: "Caminhada guiada pelas trilhas da Mata Atlântica em Miracatu.", endereco: "Parque Estadual Carlos Botelho" },
-  { id: 4, titulo: "Noite de Samba na Praia", cidadeId: 13, categoria: "cultura", data: "2026-09-20", descricao: "Samba ao vivo na beira da praia com food trucks.", endereco: "Praia do Centro - Peruíbe" },
-  { id: 5, titulo: "Pousada Vale Verde - Pacote Especial", cidadeId: 4, categoria: "hotelaria", data: "2026-09-25", descricao: "Pacote de fim de semana com café da manhã e trilhas inclusas.", endereco: "Estrada do Eldorado, km 12" }
-];
+/** Data local YYYY-MM-DD com offset de dias (0 = hoje) */
+function dataOffset(dias) {
+  const d = new Date();
+  d.setDate(d.getDate() + dias);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function gerarEventosPadrao() {
+  const hoje = dataOffset(0);
+  const amanha = dataOffset(1);
+  const em3 = dataOffset(3);
+  const em7 = dataOffset(7);
+  return [
+    { id: 1, titulo: "Festival Cultural de Registro", cidadeId: 14, categoria: "cultura", dataInicio: hoje, dataFim: em3, horaInicio: "14:00", horaFim: "22:00", descricao: "Shows, feira de artesanato e gastronomia típica da região.", endereco: "Praça da Matriz", fotos: [] },
+    { id: 2, titulo: "Feira Gastronômica de Iguape", cidadeId: 5, categoria: "gastronomia", dataInicio: hoje, dataFim: hoje, horaInicio: "10:00", horaFim: "18:00", descricao: "Sabores do Vale do Ribeira com pratos à base de peixe e mandioca.", endereco: "Centro Histórico", fotos: [] },
+    { id: 3, titulo: "Trilha Ecológica - Parque Estadual", cidadeId: 11, categoria: "cultura", dataInicio: amanha, dataFim: amanha, horaInicio: "08:00", horaFim: "16:00", descricao: "Caminhada guiada pelas trilhas da Mata Atlântica em Miracatu.", endereco: "Parque Estadual Carlos Botelho", fotos: [] },
+    { id: 4, titulo: "Noite de Samba na Praia", cidadeId: 13, categoria: "cultura", dataInicio: hoje, dataFim: hoje, horaInicio: "19:00", horaFim: "23:30", descricao: "Samba ao vivo na beira da praia com food trucks.", endereco: "Praia do Centro - Peruíbe", fotos: [] },
+    { id: 5, titulo: "Pousada Vale Verde - Pacote Especial", cidadeId: 4, categoria: "hotelaria", dataInicio: em3, dataFim: em7, horaInicio: "14:00", horaFim: "", descricao: "Pacote de fim de semana com café da manhã e trilhas inclusas.", endereco: "Estrada do Eldorado, km 12", fotos: [] }
+  ];
+}
+
+const EVENTOS_PADRAO = gerarEventosPadrao();
+const DATA_VERSION = 4;
 
 const TURISTICOS_PADRAO = [
   { id: 1, nome: "Cachoeira do Paraíso", cidadeId: 11, endereco: "Estrada da Cachoeira, Miracatu", descricao: "Belíssima queda d'água em meio à Mata Atlântica." },
@@ -71,6 +90,20 @@ let state = {
 };
 
 // -------------------- STORAGE --------------------
+function normalizarEvento(e) {
+  // Migra campo antigo "data" → dataInicio / dataFim
+  const dataInicio = e.dataInicio || e.data || "";
+  const dataFim = e.dataFim || e.dataInicio || e.data || "";
+  return {
+    ...e,
+    dataInicio,
+    dataFim,
+    horaInicio: e.horaInicio || "",
+    horaFim: e.horaFim || "",
+    fotos: e.fotos || []
+  };
+}
+
 function carregarDados() {
   const raw = localStorage.getItem("oguia_data");
   if (raw) {
@@ -85,14 +118,26 @@ function carregarDados() {
     salvas.forEach(s => {
       if (!state.cidades.find(c => c.id === s.id)) state.cidades.push(s);
     });
-    state.eventos = data.eventos || [...EVENTOS_PADRAO];
+
+    // Se versão antiga ou eventos de demonstração desatualizados, atualiza exemplos
+    if (data.version !== DATA_VERSION) {
+      const padrao = gerarEventosPadrao();
+      const salvos = (data.eventos || []).map(normalizarEvento);
+      // Mantém eventos criados pelo usuário (id > 5) e atualiza os 5 de exemplo
+      const extras = salvos.filter(e => e.id > 5);
+      state.eventos = [...padrao, ...extras];
+    } else {
+      state.eventos = (data.eventos || gerarEventosPadrao()).map(normalizarEvento);
+    }
+
     state.turisticos = data.turisticos || [...TURISTICOS_PADRAO];
     state.comerciais = data.comerciais || [...COMERCIAIS_PADRAO];
     state.guias = data.guias || [...GUIAS_PADRAO];
     state.monitoradas = data.monitoradas || state.cidades.map(c => c.id);
+    salvarDados();
   } else {
     state.cidades = CIDADES_PADRAO.map(c => ({ ...c }));
-    state.eventos = [...EVENTOS_PADRAO];
+    state.eventos = gerarEventosPadrao();
     state.turisticos = [...TURISTICOS_PADRAO];
     state.comerciais = [...COMERCIAIS_PADRAO];
     state.guias = [...GUIAS_PADRAO];
@@ -113,6 +158,7 @@ function carregarDados() {
 
 function salvarDados() {
   localStorage.setItem("oguia_data", JSON.stringify({
+    version: DATA_VERSION,
     cidades: state.cidades,
     eventos: state.eventos,
     turisticos: state.turisticos,
@@ -155,7 +201,17 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 function hojeStr() {
-  return new Date().toISOString().slice(0, 10);
+  // Data LOCAL (não UTC) — importante no Brasil
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function agoraHoraStr() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
 }
 
 function isFimDeSemana(dataStr) {
@@ -163,6 +219,27 @@ function isFimDeSemana(dataStr) {
   const d = new Date(dataStr + "T12:00:00");
   const day = d.getDay();
   return day === 0 || day === 6;
+}
+
+/** Verifica se a data de hoje está no intervalo do evento */
+function eventoAbrangeHoje(e) {
+  const hoje = hojeStr();
+  const ini = e.dataInicio || e.data || "";
+  const fim = e.dataFim || ini;
+  if (!ini) return true;
+  return hoje >= ini && hoje <= fim;
+}
+
+/** Verifica se o horário atual está dentro do período (se houver horário) */
+function eventoAcontecendoAgora(e) {
+  if (!eventoAbrangeHoje(e)) return false;
+  const agora = agoraHoraStr();
+  const hi = e.horaInicio || "";
+  const hf = e.horaFim || "";
+  if (!hi && !hf) return true; // sem horário = o dia inteiro conta como agora
+  if (hi && agora < hi) return false;
+  if (hf && agora > hf) return false;
+  return true;
 }
 
 // -------------------- NAVEGAÇÃO --------------------
@@ -245,7 +322,7 @@ function renderCidadeDetalhe() {
         <div class="card-body">
           <span class="card-cat">${e.categoria || "evento"}</span>
           <div class="card-title">${e.titulo}</div>
-          <div class="card-meta">${e.data ? formatData(e.data) : ""}</div>
+          <div class="card-meta">${formatPeriodoEvento(e)}</div>
           <p class="card-desc">${e.descricao || ""}</p>
         </div>
       </div>`;
@@ -349,8 +426,8 @@ function renderEventos() {
   if (state.filtro === "cultura") items = items.filter(e => e.categoria === "cultura");
   if (state.filtro === "gastronomia") items = items.filter(e => e.categoria === "gastronomia");
   if (state.filtro === "hotelaria") items = items.filter(e => e.categoria === "hotelaria");
-  if (state.filtro === "hoje") items = items.filter(e => e.data === hojeStr());
-  if (state.filtro === "fds") items = items.filter(e => isFimDeSemana(e.data));
+  if (state.filtro === "hoje") items = items.filter(e => eventoAbrangeHoje(e));
+  if (state.filtro === "fds") items = items.filter(e => isFimDeSemana(e.dataInicio || e.data));
 
   if (state.cidadeFiltro) {
     items = items.filter(e => e.cidadeId == state.cidadeFiltro);
@@ -365,6 +442,15 @@ function renderEventos() {
     );
   }
 
+  // Ordena: agora → hoje → próximos → outros
+  items.sort((a, b) => {
+    const ordem = { agora: 0, hoje: 1, proximo: 2, outro: 3 };
+    const ca = ordem[classificarEvento(a)] ?? 3;
+    const cb = ordem[classificarEvento(b)] ?? 3;
+    if (ca !== cb) return ca - cb;
+    return (a.dataInicio || a.data || "").localeCompare(b.dataInicio || b.data || "");
+  });
+
   if (items.length === 0) {
     lista.innerHTML = "";
     empty.style.display = "block";
@@ -372,6 +458,7 @@ function renderEventos() {
     empty.style.display = "none";
     lista.innerHTML = items.map(e => {
       const capa = (e.fotos && e.fotos[0]) ? `<img src="${e.fotos[0]}" alt="${e.titulo}">` : "📅";
+      const periodo = formatPeriodoEvento(e);
       return `
       <div class="card" onclick="abrirDetalhe('evento', ${e.id})">
         <div class="card-img">${capa}</div>
@@ -380,7 +467,7 @@ function renderEventos() {
           <div class="card-title">${e.titulo}</div>
           <div class="card-meta">
             <span>📍 ${cidadeNome(e.cidadeId)}</span>
-            ${e.data ? `<span>🗓 ${formatData(e.data)}</span>` : ""}
+            ${periodo ? `<span>🗓 ${periodo}</span>` : ""}
           </div>
           <p class="card-desc">${e.descricao || ""}</p>
         </div>
@@ -436,6 +523,19 @@ function formatData(d) {
   if (!d) return "";
   const [y, m, day] = d.split("-");
   return `${day}/${m}/${y}`;
+}
+
+function formatPeriodoEvento(e) {
+  const ini = e.dataInicio || e.data || "";
+  const fim = e.dataFim || "";
+  let s = "";
+  if (ini && fim && fim !== ini) s = `${formatData(ini)} a ${formatData(fim)}`;
+  else if (ini) s = formatData(ini);
+  const hi = e.horaInicio || "";
+  const hf = e.horaFim || "";
+  if (hi && hf) s += (s ? " · " : "") + `${hi}–${hf}`;
+  else if (hi) s += (s ? " · " : "") + `a partir de ${hi}`;
+  return s;
 }
 
 // -------------------- FILTROS --------------------
@@ -598,19 +698,29 @@ function verificarCidade(lat, lng) {
 
 /** Classifica evento: 'agora' | 'hoje' | 'proximo' | 'outro' */
 function classificarEvento(e) {
-  const hojeStr_ = hojeStr();
-  if (!e.data) return "hoje"; // sem data = trata como disponível hoje
-  if (e.data === hojeStr_) {
-    // Cultura e gastronomia de hoje contam como "agora" (mais urgentes)
-    if (e.categoria === "cultura" || e.categoria === "gastronomia") return "agora";
+  const hoje = hojeStr();
+  const ini = e.dataInicio || e.data || "";
+  const fim = e.dataFim || ini;
+
+  // Sem data = disponível hoje
+  if (!ini) {
+    return eventoAcontecendoAgora(e) ? "agora" : "hoje";
+  }
+
+  // Está no intervalo de datas de hoje?
+  if (eventoAbrangeHoje(e)) {
+    if (eventoAcontecendoAgora(e)) return "agora";
     return "hoje";
   }
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  const d = new Date(e.data + "T12:00:00");
-  const limite = new Date(hoje);
-  limite.setDate(limite.getDate() + 14);
-  if (d > hoje && d <= limite) return "proximo";
+
+  // Futuro próximo (início nos próximos 14 dias)
+  if (ini > hoje) {
+    const dHoje = new Date(hoje + "T12:00:00");
+    const dIni = new Date(ini + "T12:00:00");
+    const diff = (dIni - dHoje) / (1000 * 60 * 60 * 24);
+    if (diff <= 14) return "proximo";
+  }
+
   return "outro";
 }
 
@@ -815,7 +925,7 @@ function mostrarGpsFloat(cidade) {
             <div class="gps-float-item-cat">${e.categoria || "evento"}</div>
             <div class="gps-float-item-title">${e.titulo}</div>
             <div class="gps-float-item-meta">
-              ${e.data ? formatData(e.data) : "Hoje"}${cidadeLabel}
+              ${formatPeriodoEvento(e) || "Hoje"}${cidadeLabel}
             </div>
           </div>
         </div>`;
@@ -1035,7 +1145,7 @@ function renderAdmin() {
       <td>${e.titulo}</td>
       <td>${cidadeNome(e.cidadeId)}</td>
       <td>${e.categoria || "—"}</td>
-      <td>${e.data ? formatData(e.data) : "—"}</td>
+      <td>${formatPeriodoEvento(e) || "—"}</td>
       <td>
         <button class="btn-action btn-edit" onclick="abrirModal('evento', ${e.id})">Editar</button>
         <button class="btn-action btn-del" onclick="excluirItem('eventos', ${e.id})">Excluir</button>
@@ -1203,6 +1313,8 @@ function abrirModal(tipo, id = null) {
       ${fotoSlotsHTML(item?.fotos)}
     `;
   } else if (tipo === "evento") {
+    const di = item?.dataInicio || item?.data || hojeStr();
+    const df = item?.dataFim || item?.dataInicio || item?.data || "";
     fields = `
       <div class="form-group"><label>Título *</label><input name="titulo" required value="${item?.titulo || ""}"></div>
       <div class="form-group"><label>Cidade *</label><select name="cidadeId" required>${state.cidades.map(c => `<option value="${c.id}" ${item?.cidadeId === c.id ? "selected" : ""}>${c.nome}</option>`).join("")}</select></div>
@@ -1214,7 +1326,14 @@ function abrirModal(tipo, id = null) {
           <option value="outro" ${item?.categoria === "outro" ? "selected" : ""}>Outro</option>
         </select>
       </div>
-      <div class="form-group"><label>Data</label><input name="data" type="date" value="${item?.data || ""}"></div>
+      <div class="form-row-modal">
+        <div class="form-group"><label>Data inicial *</label><input name="dataInicio" type="date" required value="${di}"></div>
+        <div class="form-group"><label>Data final (opcional)</label><input name="dataFim" type="date" value="${df}"></div>
+      </div>
+      <div class="form-row-modal">
+        <div class="form-group"><label>Horário inicial (a partir de)</label><input name="horaInicio" type="time" value="${item?.horaInicio || ""}"></div>
+        <div class="form-group"><label>Horário final (opcional)</label><input name="horaFim" type="time" value="${item?.horaFim || ""}"></div>
+      </div>
       <div class="form-group"><label>Descrição</label><textarea name="descricao" rows="3">${item?.descricao || ""}</textarea></div>
       <div class="form-group"><label>Endereço</label><input name="endereco" value="${item?.endereco || ""}"></div>
       ${fotoSlotsHTML(item?.fotos)}
@@ -1297,12 +1416,18 @@ function salvarModal(e) {
       state.monitoradas.push(obj.id);
     }
   } else if (tipo === "evento") {
+    const dataInicio = fd.get("dataInicio") || hojeStr();
+    const dataFim = fd.get("dataFim") || dataInicio;
     const obj = {
       id: id || gerarId(state.eventos),
       titulo: fd.get("titulo"),
       cidadeId: parseInt(fd.get("cidadeId")),
       categoria: fd.get("categoria"),
-      data: fd.get("data"),
+      dataInicio,
+      dataFim: dataFim < dataInicio ? dataInicio : dataFim,
+      horaInicio: fd.get("horaInicio") || "",
+      horaFim: fd.get("horaFim") || "",
+      data: dataInicio, // compatibilidade
       descricao: fd.get("descricao"),
       endereco: fd.get("endereco"),
       fotos
@@ -1401,7 +1526,12 @@ function abrirDetalhe(tipo, id) {
 
   const meta = [];
   meta.push(`<span>📍 ${cidadeNome(item.cidadeId)}</span>`);
-  if (item.data) meta.push(`<span>🗓 ${formatData(item.data)}</span>`);
+  if (tipo === "evento") {
+    const per = formatPeriodoEvento(item);
+    if (per) meta.push(`<span>🗓 ${per}</span>`);
+  } else if (item.data) {
+    meta.push(`<span>🗓 ${formatData(item.data)}</span>`);
+  }
   if (item.endereco) meta.push(`<span>🏠 ${item.endereco}</span>`);
 
   document.getElementById("detalheConteudo").innerHTML = `
