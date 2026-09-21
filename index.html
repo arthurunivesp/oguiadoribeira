@@ -17,10 +17,7 @@
       <nav class="nav">
         <a href="#" onclick="showPage('home')">Eventos</a>
         <a href="#" onclick="showPage('cidades')">Cidades</a>
-        <a href="#" onclick="showPage('notificacoes')" class="nav-notif">
-          <span class="bell">🔔</span> Notificações
-        </a>
-        <a href="#" onclick="showPage('admin-login')" class="nav-admin" id="adminLink">Admin</a>
+        <a href="#" onclick="showPage('notificacoes')">Notificações</a>
       </nav>
     </div>
   </header>
@@ -382,7 +379,10 @@
             <h2>Painel Administrativo</h2>
             <p>Bem-vindo, <strong id="adminUser">Admin</strong></p>
           </div>
-          <button class="btn btn-outline" onclick="logoutAdmin()">Sair</button>
+          <div class="admin-header-actions">
+            <button class="btn btn-outline" onclick="showPage('home')">← Site</button>
+            <button class="btn btn-sair" onclick="logoutAdmin()">Sair do Admin</button>
+          </div>
         </div>
 
         <!-- Admin Tabs -->
@@ -544,10 +544,18 @@
           <a href="#" onclick="showPage('notificacoes')">Notificações</a>
           <a href="#formContato">Contato</a>
         </div>
+        <div>
+          <h4>ADMIN</h4>
+          <a href="#" id="adminLinkFooter" onclick="abrirAdmin()">Área Admin</a>
+          <a href="#" id="adminSairFooter" onclick="logoutAdmin()" style="display:none;">Sair do Admin</a>
+        </div>
       </div>
     </div>
     <div class="footer-bottom">
-      <div class="container">© 2025 oGuiaDoRibeira — Todos os direitos reservados</div>
+      <div class="container footer-bottom-inner">
+        <span>© 2025 oGuiaDoRibeira — Todos os direitos reservados</span>
+        <button type="button" class="footer-admin-btn" id="adminLink" onclick="abrirAdmin()">Admin</button>
+      </div>
     </div>
   </footer>
 

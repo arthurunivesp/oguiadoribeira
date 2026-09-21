@@ -1093,6 +1093,7 @@ function validarToken() {
       email: "ocamofo@gmail.com",
       token: state.tokenAtual
     }));
+    atualizarLinksAdmin();
     toast("Login realizado com sucesso!");
     showPage("admin");
   } else {
@@ -1109,11 +1110,32 @@ function voltarLogin() {
   state.tokenAtual = null;
 }
 
+function abrirAdmin() {
+  if (state.adminLogado) showPage("admin");
+  else showPage("admin-login");
+}
+
+function atualizarLinksAdmin() {
+  const btn = document.getElementById("adminLink");
+  const linkFooter = document.getElementById("adminLinkFooter");
+  const sairFooter = document.getElementById("adminSairFooter");
+  if (state.adminLogado) {
+    if (btn) btn.textContent = "Painel Admin";
+    if (linkFooter) linkFooter.textContent = "Painel Admin";
+    if (sairFooter) sairFooter.style.display = "block";
+  } else {
+    if (btn) btn.textContent = "Admin";
+    if (linkFooter) linkFooter.textContent = "Área Admin";
+    if (sairFooter) sairFooter.style.display = "none";
+  }
+}
+
 function logoutAdmin() {
   state.adminLogado = false;
   state.tokenAtual = null;
   sessionStorage.removeItem("oguia_admin");
-  toast("Sessão encerrada.");
+  atualizarLinksAdmin();
+  toast("Sessão encerrada. Você saiu do Admin.");
   showPage("home");
 }
 
@@ -1565,10 +1587,5 @@ document.addEventListener("DOMContentLoaded", () => {
   popularFiltroCidade();
   renderEventos();
   renderCidadesHome();
-
-  // Atualiza link admin se logado
-  if (state.adminLogado) {
-    document.getElementById("adminLink").textContent = "Painel Admin";
-    document.getElementById("adminLink").onclick = () => showPage("admin");
-  }
+  atualizarLinksAdmin();
 });
