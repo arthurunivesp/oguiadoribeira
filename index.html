@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>oGuiaDoRibeira — Vale do Ribeira & Baixada Santista</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="#" class="logo" onclick="showPage('home')">oGuiaDoRibeira</a>
+      <nav class="nav">
+        <a href="#" onclick="showPage('home')">Eventos</a>
+        <a href="#" onclick="showPage('cidades')">Cidades</a>
+        <a href="#" onclick="showPage('notificacoes')" class="nav-notif">
+          <span class="bell">🔔</span> Notificações
+        </a>
+        <a href="#" onclick="showPage('admin-login')" class="nav-admin" id="adminLink">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ==================== PÁGINA HOME ==================== -->
+  <main id="page-home">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="badge-cidades">
+          <span class="badge-dot"></span> 15 cidades cobertas
+        </div>
+        <h1>Descubra o que acontece agora na sua cidade</h1>
+        <p class="hero-sub">Eventos culturais, gastronomia e hotelaria no Vale do Ribeira e Baixada Santista — tudo em um só lugar.</p>
+        <div class="hero-btns">
+          <button class="btn btn-primary" onclick="filtrarHoje()">Ver Eventos de Hoje →</button>
+          <button class="btn btn-outline" onclick="showPage('cidades')">📍 Ver Cidades</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- O QUE ESTÁ ACONTECENDO -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">O que está acontecendo</h2>
+        <p class="section-sub">Filtre por categoria ou período</p>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab active" data-tab="eventos" onclick="switchTab('eventos')">📅 Eventos</button>
+          <button class="tab" data-tab="locais" onclick="switchTab('locais')">🏠 Locais</button>
+        </div>
+
+        <!-- Aviso GPS -->
+        <div class="gps-aviso" id="gpsAviso">
+          <div class="gps-aviso-icon">🔔</div>
+          <div>
+            <strong>Ativar avisos de chegada</strong>
+            <p>Chegou na cidade? Receba no celular o que tem pra fazer hoje.</p>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="showPage('notificacoes')">Ativar</button>
+        </div>
+
+        <!-- Localização atual -->
+        <div class="local-atual" id="localAtual" style="display:none;">
+          <div class="local-atual-icon">📍</div>
+          <div>
+            <span class="local-label">Você está em</span>
+            <strong id="cidadeAtualNome">—</strong>
+            <span id="eventosAgora" class="eventos-agora"></span>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filtros">
+          <button class="filtro active" data-filtro="todos">Todos</button>
+          <button class="filtro" data-filtro="cultura">Cultura</button>
+          <button class="filtro" data-filtro="gastronomia">Gastronomia</button>
+          <button class="filtro" data-filtro="hotelaria">Hotelaria</button>
+          <button class="filtro" data-filtro="hoje">Hoje</button>
+          <button class="filtro" data-filtro="fds">Fim de semana</button>
+          <button class="filtro limpar" onclick="limparFiltros()">✕ Limpar</button>
+        </div>
+
+        <!-- Busca -->
+        <div class="busca-row">
+          <div class="busca-input">
+            <span class="busca-icon">🔍</span>
+            <input type="text" id="buscaEventos" placeholder="Buscar eventos..." oninput="filtrarEventos()">
+          </div>
+          <select id="filtroCidade" onchange="filtrarEventos()">
+            <option value="">Todas as cidades</option>
+          </select>
+        </div>
+
+        <!-- Lista de Eventos -->
+        <div id="listaEventos" class="lista-cards"></div>
+
+        <!-- Lista de Locais (Pontos Turísticos + Comerciais) -->
+        <div id="listaLocais" class="lista-cards" style="display:none;"></div>
+
+        <!-- Empty state -->
+        <div id="emptyState" class="empty-state" style="display:none;">
+          <div class="empty-icon">📅</div>
+          <h3>Nenhum evento encontrado</h3>
+          <p>Tente ajustar os filtros ou cadastre um novo evento.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMO FUNCIONA -->
+    <section class="section como-funciona">
+      <div class="container">
+        <div class="como-card">
+          <h2>Como funciona</h2>
+          <ol class="como-lista">
+            <li><span class="num">1</span> Ative o rastreamento GPS e permita notificações.</li>
+            <li><span class="num">2</span> Selecione as cidades que deseja monitorar.</li>
+            <li><span class="num">3</span> Ao chegar em uma cidade, você recebe um alerta automático.</li>
+            <li><span class="num">4</span> Toque na notificação para ver os eventos do momento.</li>
+          </ol>
+          <button class="btn btn-outline-green" onclick="showPage('notificacoes')">Ver todos os eventos →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CIDADES COBERTAS -->
+    <section class="section cidades-section">
+      <div class="container">
+        <h2 class="section-title">Cidades cobertas</h2>
+        <p class="section-sub">Vale do Ribeira e Baixada Santista — 15 cidades, uma região incrível</p>
+
+        <div class="cidade-destaque">
+          <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80" alt="Praia">
+          <div class="cidade-destaque-info">
+            <span class="regiao">REGIÃO</span>
+            <h3>Vale do Ribeira & Baixada Santista</h3>
+          </div>
+        </div>
+
+        <div class="cidades-grid" id="cidadesGridHome"></div>
+      </div>
+    </section>
+
+    <!-- CADASTRE -->
+    <section class="section cadastre-section">
+      <div class="container text-center">
+        <h2>Tem um evento, restaurante ou pousada?</h2>
+        <p>Cadastre gratuitamente e alcance turistas e moradores que chegam na sua cidade.</p>
+        <button class="btn btn-primary" onclick="showPage('cadastro-publico')">Cadastrar Gratuitamente →</button>
+      </div>
+    </section>
+
+    <!-- FALE CONOSCO -->
+    <section class="section contato-section">
+      <div class="container">
+        <h2 class="section-title light">Fale com a gente</h2>
+        <p class="section-sub light">Sugestões, reclamações e contato profissional — sua mensagem chega direto na nossa caixa de entrada.</p>
+        <form id="formContato" class="form-contato" onsubmit="enviarContato(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nome *</label>
+              <input type="text" required placeholder="Seu nome">
+            </div>
+            <div class="form-group">
+              <label>Seu e-mail *</label>
+              <input type="email" required placeholder="seu@email.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Assunto *</label>
+            <select required>
+              <option value="sugestao">Sugestão</option>
+              <option value="reclamacao">Reclamação</option>
+              <option value="parceria">Parceria</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Mensagem *</label>
+            <textarea required rows="4" placeholder="Escreva sua mensagem..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary full">✈ Enviar mensagem</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== PÁGINA CIDADES ==================== -->
+  <main id="page-cidades" class="page-hidden">
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Cidades cobertas</h2>
+        <p class="section-sub">Clique em uma cidade para conhecer a história, eventos e guias locais</p>
+        <div class="cidades-grid large" id="cidadesGridFull"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== PÁGINA DETALHE DA CIDADE ==================== -->
+  <main id="page-cidade-detalhe" class="page-hidden">
+    <section class="section">
+      <div class="container" id="cidadeDetalheConteudo">
+        <!-- preenchido via JS -->
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== PÁGINA NOTIFICAÇÕES / GPS ==================== -->
+  <main id="page-notificacoes" class="page-hidden">
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Notificações</h2>
+        <p class="section-sub">Avisos automáticos do que está acontecendo na cidade que você chegou</p>
+
+        <div class="notif-card">
+          <div class="notif-icon red">🔕</div>
+          <div>
+            <strong>Notificações push</strong>
+            <p>Permita as notificações para receber avisos de chegada.</p>
+          </div>
+          <button class="btn btn-primary" id="btnPermNotif" onclick="pedirPermissaoNotif()">Permitir notificações</button>
+        </div>
+
+        <div class="notif-card">
+          <div class="notif-icon">📍</div>
+          <div>
+            <strong>Rastreamento GPS</strong>
+            <p>Ative para monitorar sua localização e detectar chegada nas cidades.</p>
+          </div>
+          <button class="btn btn-primary" id="btnGPS" onclick="toggleGPS()">Iniciar rastreamento</button>
+        </div>
+
+        <div class="cidades-monitoradas">
+          <div class="cm-header">
+            <div>
+              <strong>Cidades monitoradas</strong>
+              <span id="qtdMonitoradas">0 de 15 cidades selecionadas</span>
+            </div>
+            <button class="btn-link" onclick="desmarcarTodas()">Desmarcar todas</button>
+          </div>
+          <div class="cm-grid" id="cidadesMonitoradas"></div>
+        </div>
+
+        <div id="gpsStatus" class="gps-status"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== PÁGINA CADASTRO PÚBLICO ==================== -->
+  <main id="page-cadastro-publico" class="page-hidden">
+    <section class="section">
+      <div class="container narrow">
+        <h2 class="section-title">Cadastrar Evento ou Local</h2>
+        <p class="section-sub">Preencha os dados. Seu cadastro será revisado pelo admin.</p>
+        <form id="formPublico" class="form-admin" onsubmit="cadastrarPublico(event)">
+          <div class="form-group">
+            <label>Tipo *</label>
+            <select id="pubTipo" required onchange="togglePublicoFields()">
+              <option value="evento">Evento</option>
+              <option value="turistico">Ponto Turístico</option>
+              <option value="comercial">Ponto Comercial</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nome / Título *</label>
+            <input type="text" id="pubNome" required>
+          </div>
+          <div class="form-group">
+            <label>Cidade *</label>
+            <select id="pubCidade" required></select>
+          </div>
+          <div class="form-group" id="pubCategoriaGroup">
+            <label>Categoria</label>
+            <select id="pubCategoria">
+              <option value="cultura">Cultura</option>
+              <option value="gastronomia">Gastronomia</option>
+              <option value="hotelaria">Hotelaria</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group" id="pubDataGroup">
+            <label>Data do Evento</label>
+            <input type="date" id="pubData">
+          </div>
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea id="pubDesc" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Endereço / Local</label>
+            <input type="text" id="pubEndereco">
+          </div>
+          <button type="submit" class="btn btn-primary full">Enviar cadastro</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== ADMIN LOGIN ==================== -->
+  <main id="page-admin-login" class="page-hidden">
+    <section class="section">
+      <div class="container narrow">
+        <div class="admin-login-box">
+          <h2>Área Administrativa</h2>
+          <p>Acesso restrito. Informe seu e-mail para continuar.</p>
+
+          <div id="loginStep1">
+            <div class="form-group">
+              <label>E-mail</label>
+              <input type="email" id="adminEmail" placeholder="Digite seu e-mail" autocomplete="off">
+            </div>
+            <button class="btn btn-primary full" onclick="solicitarToken()">Continuar</button>
+          </div>
+
+          <div id="loginStep2" style="display:none;">
+            <div class="token-info">
+              <p>✅ Token gerado e enviado para <strong id="emailDestino"></strong></p>
+              <p class="token-display">Seu token de acesso:</p>
+              <p class="token-box"><code id="tokenGerado"></code></p>
+              <p class="hint">O token foi preenchido automaticamente. Clique em Entrar.</p>
+            </div>
+            <div class="form-group">
+              <label>Token de acesso</label>
+              <input type="text" id="adminToken" placeholder="Token gerado" autocomplete="off">
+            </div>
+            <button class="btn btn-primary full" onclick="validarToken()">Entrar no Painel →</button>
+            <button class="btn btn-outline full" style="margin-top:10px" onclick="voltarLogin()">Voltar</button>
+          </div>
+
+          <!-- Mensagem para e-mails não autorizados (pacote de anúncios) -->
+          <div id="loginStepAnuncio" style="display:none;">
+            <div class="anuncio-box">
+              <div class="anuncio-icon">📢</div>
+              <h3>Quer anunciar no oGuiaDoRibeira?</h3>
+              <p>Este e-mail não possui acesso administrativo. Mas você pode divulgar seu negócio, evento ou ponto turístico para milhares de visitantes da região!</p>
+              
+              <div class="anuncio-como">
+                <strong>Como funciona:</strong>
+                <ol>
+                  <li>Entre em contato pelo e-mail <a href="mailto:contato@oguiadoribeira.com">contato@oguiadoribeira.com</a></li>
+                  <li>Escolha o pacote de anúncio ideal para o seu negócio</li>
+                  <li>Seu estabelecimento ou evento aparece no guia com destaque</li>
+                  <li>Alcance turistas e moradores que chegam nas cidades pelo GPS</li>
+                </ol>
+              </div>
+
+              <div class="anuncio-pacotes">
+                <div class="pacote">
+                  <strong>Básico</strong>
+                  <span>Listagem no guia</span>
+                </div>
+                <div class="pacote destaque">
+                  <strong>Destaque</strong>
+                  <span>Prioridade + banner</span>
+                </div>
+                <div class="pacote">
+                  <strong>Premium</strong>
+                  <span>Topo + notificação GPS</span>
+                </div>
+              </div>
+
+              <a href="mailto:contato@oguiadoribeira.com?subject=Quero%20anunciar%20no%20oGuiaDoRibeira" class="btn btn-primary full">Entrar em contato →</a>
+              <button class="btn btn-outline full" style="margin-top:10px" onclick="voltarLogin()">Voltar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== ADMIN DASHBOARD ==================== -->
+  <main id="page-admin" class="page-hidden">
+    <section class="section admin-section">
+      <div class="container">
+        <div class="admin-header">
+          <div>
+            <h2>Painel Administrativo</h2>
+            <p>Bem-vindo, <strong id="adminUser">Admin</strong></p>
+          </div>
+          <button class="btn btn-outline" onclick="logoutAdmin()">Sair</button>
+        </div>
+
+        <!-- Admin Tabs -->
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-atab="cidades" onclick="switchAdminTab('cidades')">🏙 Cidades</button>
+          <button class="admin-tab" data-atab="eventos" onclick="switchAdminTab('eventos')">📅 Eventos</button>
+          <button class="admin-tab" data-atab="turisticos" onclick="switchAdminTab('turisticos')">🏞 Pontos Turísticos</button>
+          <button class="admin-tab" data-atab="comerciais" onclick="switchAdminTab('comerciais')">🏪 Pontos Comerciais</button>
+          <button class="admin-tab" data-atab="guias" onclick="switchAdminTab('guias')">🧭 Guias Locais</button>
+        </div>
+
+        <!-- ADMIN CIDADES -->
+        <div id="admin-cidades" class="admin-panel">
+          <div class="admin-toolbar">
+            <h3>Gerenciar Cidades</h3>
+            <button class="btn btn-primary" onclick="abrirModal('cidade')">+ Nova Cidade</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Latitude</th>
+                  <th>Longitude</th>
+                  <th>Raio (km)</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="adminCidadesBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ADMIN EVENTOS -->
+        <div id="admin-eventos" class="admin-panel" style="display:none;">
+          <div class="admin-toolbar">
+            <h3>Gerenciar Eventos</h3>
+            <button class="btn btn-primary" onclick="abrirModal('evento')">+ Novo Evento</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Cidade</th>
+                  <th>Categoria</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="adminEventosBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ADMIN TURÍSTICOS -->
+        <div id="admin-turisticos" class="admin-panel" style="display:none;">
+          <div class="admin-toolbar">
+            <h3>Pontos Turísticos</h3>
+            <button class="btn btn-primary" onclick="abrirModal('turistico')">+ Novo Ponto Turístico</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Cidade</th>
+                  <th>Endereço</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="adminTuristicosBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ADMIN COMERCIAIS -->
+        <div id="admin-comerciais" class="admin-panel" style="display:none;">
+          <div class="admin-toolbar">
+            <h3>Pontos Comerciais</h3>
+            <button class="btn btn-primary" onclick="abrirModal('comercial')">+ Novo Ponto Comercial</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Cidade</th>
+                  <th>Categoria</th>
+                  <th>Endereço</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="adminComerciaisBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ADMIN GUIAS -->
+        <div id="admin-guias" class="admin-panel" style="display:none;">
+          <div class="admin-toolbar">
+            <h3>Guias Turísticos Locais</h3>
+            <button class="btn btn-primary" onclick="abrirModal('guia')">+ Novo Guia</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Cidade</th>
+                  <th>Especialidades</th>
+                  <th>WhatsApp</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="adminGuiasBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>oGuiaDoRibeira</strong>
+        <p>Seu guia cultural no Vale do Ribeira e Baixada Santista. Descubra eventos, restaurantes e pousadas nas cidades da região.</p>
+        <p class="footer-loc">📍 Vale do Ribeira · Baixada Santista · SP</p>
+        <div class="footer-social">
+          <a href="https://instagram.com" target="_blank" title="Instagram" aria-label="Instagram">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/>
+            </svg>
+          </a>
+          <a href="mailto:ocamofo@gmail.com" title="E-mail" aria-label="E-mail">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div>
+          <h4>EXPLORAR</h4>
+          <a href="#" onclick="showPage('home')">Eventos de Hoje</a>
+          <a href="#" onclick="showPage('cidades')">Cidades Cobertas</a>
+          <a href="#">Gastronomia</a>
+          <a href="#">Hotelaria</a>
+        </div>
+        <div>
+          <h4>ORGANIZADORES</h4>
+          <a href="#" onclick="showPage('cadastro-publico')">Cadastrar Evento</a>
+          <a href="#" onclick="showPage('cadastro-publico')">Cadastrar Local</a>
+          <a href="#" onclick="showPage('notificacoes')">Notificações</a>
+          <a href="#formContato">Contato</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">© 2025 oGuiaDoRibeira — Todos os direitos reservados</div>
+    </div>
+  </footer>
+
+  <!-- MODAL CADASTRO/EDIÇÃO -->
+  <div class="modal-overlay" id="modal" style="display:none;">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 id="modalTitle">Novo Item</h3>
+        <button class="modal-close" onclick="fecharModal()">✕</button>
+      </div>
+      <form id="modalForm" onsubmit="salvarModal(event)">
+        <div id="modalFields"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="fecharModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DETALHES (ao clicar no card) -->
+  <div class="modal-overlay" id="modalDetalhe" style="display:none;" onclick="fecharDetalhe(event)">
+    <div class="modal modal-detalhe" onclick="event.stopPropagation()">
+      <button class="modal-close detalhe-close" onclick="fecharDetalhe()">✕</button>
+      <div id="detalheConteudo"></div>
+    </div>
+  </div>
+
+  <!-- CAIXA FLUTUANTE GPS — eventos ao chegar na cidade -->
+  <div id="gpsFloat" class="gps-float" style="display:none;">
+    <div class="gps-float-header">
+      <div class="gps-float-title">
+        <span class="gps-float-pin">📍</span>
+        <div>
+          <strong id="gpsFloatCidade">—</strong>
+          <span id="gpsFloatSub" class="gps-float-sub"></span>
+        </div>
+      </div>
+      <button class="gps-float-close" onclick="fecharGpsFloat()">✕</button>
+    </div>
+    <div class="gps-float-body" id="gpsFloatBody"></div>
+    <div class="gps-float-footer">
+      <button class="btn btn-sm btn-primary" onclick="verTodosEventosCidade()">Ver todos →</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
